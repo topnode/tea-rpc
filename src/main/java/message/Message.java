@@ -1,19 +1,20 @@
 package message;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class Message{
+public class Message implements Cloneable{
 
 	private int serviceId;
 	private int requestId;
 	private int statusCode;
 	private long consumer;
 	private Object data=null;
-	private Map<String,Object> dataMap=null;
+	private LinkedHashMap<String,Object> dataMap=null;
 	
 	public int setService(String className, String methodName) {
 		setServiceId((className + ":" + methodName).hashCode());
@@ -65,12 +66,12 @@ public class Message{
 	}
 	
 	public Map<String,Object> getDataMap(){
-		if(this.dataMap==null) this.dataMap=new HashMap<String,Object>();
+		if(this.dataMap==null) this.dataMap=new LinkedHashMap<String,Object>();
 		return this.dataMap;
 	}
 	
 	public <T> void set(String name,T object){
-		if(this.dataMap==null) this.dataMap=new HashMap<String,Object>();
+		if(this.dataMap==null) this.dataMap=new LinkedHashMap<String,Object>();
 		this.dataMap.put(name,object);
 	}
 	
@@ -83,9 +84,7 @@ public class Message{
 	}
 
 	public String toString() {
-	
 		return toJson();
-		
 	}
 	
 	public String toJson() {

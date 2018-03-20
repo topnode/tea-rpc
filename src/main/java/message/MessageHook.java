@@ -56,7 +56,8 @@ public final class MessageHook {
     public static void start(int port){
     	
     	busyQueue.start(new BusyHandler());
-    	MessageHook.register("tea.TeaService", "join");
+    	MessageHook.register("message.MessageService", "join");
+    	MessageHook.register("message.MessageService", "service");
         try {
 			TcpServer.start(port);
 		} catch (InterruptedException e) {
@@ -90,10 +91,9 @@ public final class MessageHook {
 		serviceNames.remove(serviceId);
 		instances.remove(serviceId);
 		
-		
 	}
 	
-	public static void register(String fullClassName,String methodName){
+	private static void register(String fullClassName,String methodName){
 		
 		String className=fullClassName.substring(fullClassName.lastIndexOf(".")+1);
 		int serviceId=(className+":"+methodName).hashCode();
@@ -114,6 +114,8 @@ public final class MessageHook {
 		}
 		
 	}
+	
+	
 	
 	public static Map<Integer,String >  getServiceNames(){
 		return serviceNames;

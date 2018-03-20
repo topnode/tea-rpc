@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.tuple.Pair;
-
 import io.netty.channel.Channel;
 import tcp.TcpConnecter;
 
@@ -42,8 +41,7 @@ public class MessageStub {
 		}
 
 		
-	
-		heartbeat.setService("TeaService", "join");
+		heartbeat.setService("MessageService", "join");
 		heartbeat.setConsumer(UUID.randomUUID().getLeastSignificantBits());
 		
 		workers = Executors.newScheduledThreadPool(2);
@@ -110,8 +108,10 @@ public class MessageStub {
 
 	public static void notify(final Message message) {
 
-		if (furtures.get(message.getRequestId()) != null)
+		if (furtures.get(message.getRequestId()) != null){
 			furtures.remove(message.getRequestId()).complete(message);
+			System.out.println(message.getRequestId()+":"+message);
+		}
 		
 		if (callbacks.get(message.getRequestId()) != null)
 			workers.submit(new Runnable() {
@@ -147,6 +147,7 @@ public class MessageStub {
 	public static Message send(Message request, int waitTime)
 			throws InterruptedException, ExecutionException, TimeoutException {
 
+		request.setRequestId();
 		Channel channel = loadBalance();
 		CompletableFuture<Message> furture = MessageStub.addFurture(request.getRequestId(), waitTime);
 		channel.writeAndFlush(request);
@@ -155,9 +156,11 @@ public class MessageStub {
 
 	}
 
+	
 	// 异步调用
 	public static CompletableFuture<Message> send(Message request) throws InterruptedException {
 
+		request.setRequestId();
 		Channel channel = loadBalance();
 		CompletableFuture<Message> furture = MessageStub.addFurture(request.getRequestId());
 		channel.writeAndFlush(request);
@@ -168,12 +171,29 @@ public class MessageStub {
 	// 异步调用 带回调
 	public static void send(Message request, MessageListener callback) throws InterruptedException {
 
+		request.setRequestId();
 		Channel channel = loadBalance();
 		channel.writeAndFlush(request);
 		callbacks.put(request.getRequestId(), callback);
 		// timeouts.offer(Pair.of(request.getRequestId(),
 		// System.currentTimeMillis()+10));//10S后系统自动删除
 
+	}
+	
+	
+	private static ConcurrentHashMap<Integer,Object> services=new ConcurrentHashMap<Integer,Object>();
+	
+	//
+	public static <T> T getService(Class<T> clazz){
+		
+		String name=clazz.getName().substring(clazz.getName().lastIndexOf(".")+1);
+		Object o=services.get(name.hashCode());
+		if(o==null){
+			o=MessageInvoker.newInstance(new Class[]{clazz},name);
+			services.put(name.hashCode(),o);
+		}
+		return (T)o;
+		
 	}
 
 }

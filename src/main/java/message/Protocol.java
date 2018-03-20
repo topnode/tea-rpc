@@ -18,6 +18,7 @@ public class Protocol {
 //		  	case PROTOBUFF: return SerializationUtils.serializer(obj);
 //		  	default: return obj.toString().getBytes();
 //		  }
+	   
 	}
 
 	@SuppressWarnings("unchecked")
