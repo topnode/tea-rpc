@@ -69,8 +69,7 @@ public final class MessageHook {
 	
 	public static Message invoker(Message message){
 		
-		System.out.println(serviceNames.get(message.getServiceId()));
-		System.out.println(message);
+
 		try {
 			Method method=invokers.get(message.getServiceId());
 			if( method==null ) return message;
@@ -116,23 +115,9 @@ public final class MessageHook {
 	}
 	
 	
-	
-	public static Map<Integer,String >  getServiceNames(){
+	private static Map<Integer,String >  getServiceNames(){
 		return serviceNames;
 	}
 	
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		
-		MessageHook.register("tea.MessageService", "handle");
-		Message m=new Message();
-		
-		m.setService("MessageService", "handle");
-	    int count=100000;
-		while(count-->0){
-			m.setRequestId();
-		}
-		
-	}
 
 }

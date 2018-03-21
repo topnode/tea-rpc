@@ -22,7 +22,7 @@ import tcp.TcpConnecter;
 
 public class MessageStub {
 
-	private static List<Channel> channels = new ArrayList<Channel>();
+	private static ConcurrentLinkedQueue<Channel> channels = new ConcurrentLinkedQueue<Channel>();
 	private static ConcurrentHashMap<Integer, CompletableFuture<Message>> furtures = new ConcurrentHashMap<Integer, CompletableFuture<Message>>();
 	private static ConcurrentHashMap<Integer, MessageListener> callbacks = new ConcurrentHashMap<Integer, MessageListener>();
 	private static ConcurrentLinkedQueue<Pair<Integer, Long>> timeouts = new ConcurrentLinkedQueue<Pair<Integer, Long>>();
@@ -30,10 +30,30 @@ public class MessageStub {
 	private static ExecutorService workers = null;
 	public static Message heartbeat=new Message();
 	
+	public static String hhost;
+	public static int pport;
+	
+	//重新链接
+	public static boolean reconnect(){
+		try {
+			channels.clear();
+			channels.add(TcpConnecter.connect(hhost, pport));
+			return true;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
+			
+			
+	
 	// @SuppressWarnings("unchecked"）
 	public static void keep(String host, int port) {
 
 		try {
+			hhost=host;
+			pport=port;
 			channels.add(TcpConnecter.connect(host, port));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -53,8 +73,8 @@ public class MessageStub {
 				// TODO Auto-generated method stub
 
 				long now = System.currentTimeMillis();
-				System.out.println("keep clean:" + now);
-				System.out.println("furtures:" + furtures.size());
+//				System.out.println("keep clean:" + now);
+//				System.out.println("furtures:" + furtures.size());
 				
 				for(Channel channel:channels){
 					channel.writeAndFlush(heartbeat);
@@ -110,7 +130,9 @@ public class MessageStub {
 
 		if (furtures.get(message.getRequestId()) != null){
 			furtures.remove(message.getRequestId()).complete(message);
-			System.out.println(message.getRequestId()+":"+message);
+			//System.out.println(message.getRequestId()+":"+message);
+		}else{
+			 //System.out.println("loss:"+message);
 		}
 		
 		if (callbacks.get(message.getRequestId()) != null)
@@ -131,16 +153,16 @@ public class MessageStub {
 
 			});
 		
-	    System.out.println(message);
+	   
 
 	}
 
 	public static void addChannel(Channel channel) {
-		channels.add(channel);
+		channels.offer(channel);
 	}
 
 	private static Channel loadBalance() {
-		return channels.get(0);
+		return channels.peek();
 	}
 
 	// 同步调用 带超时

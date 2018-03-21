@@ -26,6 +26,17 @@ public class TcpClientHandler extends SimpleChannelInboundHandler<Message> {
 	public void exceptionCaught(ChannelHandlerContext ctx,Throwable cause){
 		   System.out.println("连接RPC服务器异常.");
 		   ctx.close();
+		   int count=10;
+		   while(count-->0){
+			   MessageStub.reconnect();
+			   
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		   }
 	}
 
 	

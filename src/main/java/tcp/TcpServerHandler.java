@@ -32,7 +32,7 @@ public class TcpServerHandler  extends SimpleChannelInboundHandler<Message> {
 	
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx,Throwable cause){
-		   System.out.println("远端关闭连接."+cause.getMessage());
+		   System.out.println("远端关闭连接.");
 		   ctx.close();
 	}
 
