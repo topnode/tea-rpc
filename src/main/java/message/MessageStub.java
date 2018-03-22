@@ -25,6 +25,7 @@ public class MessageStub {
 	private static ConcurrentLinkedQueue<Channel> channels = new ConcurrentLinkedQueue<Channel>();
 	private static ConcurrentHashMap<Integer, CompletableFuture<Message>> furtures = new ConcurrentHashMap<Integer, CompletableFuture<Message>>();
 	private static ConcurrentHashMap<Integer, MessageListener> callbacks = new ConcurrentHashMap<Integer, MessageListener>();
+	private static ConcurrentHashMap<Integer, MessageListener> listeners = new ConcurrentHashMap<Integer, MessageListener>();
 	private static ConcurrentLinkedQueue<Pair<Integer, Long>> timeouts = new ConcurrentLinkedQueue<Pair<Integer, Long>>();
 	private static ScheduledExecutorService keepers = null;
 	private static ExecutorService workers = null;
@@ -49,7 +50,7 @@ public class MessageStub {
 			
 	
 	// @SuppressWarnings("unchecked"）
-	public static void keep(String host, int port) {
+	public static void keep(long customer,String host, int port) {
 
 		try {
 			hhost=host;
@@ -62,7 +63,11 @@ public class MessageStub {
 
 		
 		heartbeat.setService("MessageService", "join");
-		heartbeat.setConsumer(UUID.randomUUID().getLeastSignificantBits());
+		heartbeat.setConsumer(customer);
+		
+		for(Channel channel:channels){
+			channel.writeAndFlush(heartbeat);
+		}
 		
 		workers = Executors.newScheduledThreadPool(2);
 		keepers = Executors.newScheduledThreadPool(1);
@@ -127,6 +132,11 @@ public class MessageStub {
 	}
 
 	public static void notify(final Message message) {
+		
+		//收到监听的消息
+		if(listeners.containsKey(message.getServiceId())){
+			listeners.get(message.getServiceId()).handle(message);
+		}
 
 		if (furtures.get(message.getRequestId()) != null){
 			furtures.remove(message.getRequestId()).complete(message);
@@ -202,6 +212,10 @@ public class MessageStub {
 
 	}
 	
+	// 异步调用 带回调
+	public static void listen(int serviceId, MessageListener callback) throws InterruptedException {
+		listeners.put(serviceId, callback);
+	}
 	
 	private static ConcurrentHashMap<Integer,Object> services=new ConcurrentHashMap<Integer,Object>();
 	
