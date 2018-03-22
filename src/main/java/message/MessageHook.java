@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import bus.BusyHandler;
 import bus.BusyQueue;
+import io.netty.channel.Channel;
 import tcp.TcpServer;
 
 
@@ -21,6 +22,8 @@ public final class MessageHook {
 		}
 		
 	}
+	
+	private static  ConcurrentHashMap<Long,Channel> channels=new ConcurrentHashMap<Long,Channel>();
 	
 	private static BusyQueue busyQueue = new BusyQueue(4096,2);
 	
@@ -111,6 +114,24 @@ public final class MessageHook {
 				e.printStackTrace();
 			}
 		}
+		
+	}
+	
+	public static void logChannel(long consumer,Channel channel){
+		channels.put(consumer, channel);
+	}
+	
+	public static <T> void notifyMessage(long consumer,T data){
+		
+		Message msg=MessagePool.apply();
+		msg.setServiceId(-1);
+		msg.setConsumer(consumer);
+		msg.setData(data);
+		
+		Channel channel=channels.get(consumer);
+		if(channel!=null)
+		channel.writeAndFlush(msg);
+		else System.out.println("dddd");
 		
 	}
 	
