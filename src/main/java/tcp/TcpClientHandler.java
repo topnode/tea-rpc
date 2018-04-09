@@ -24,10 +24,10 @@ public class TcpClientHandler extends SimpleChannelInboundHandler<Message> {
 		   ctx.close();
 		   int count=10;
 		   while(count-->0){
-			   MessageStub.reconnect();
+			if(MessageStub.reconnect()) break;
 			   
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

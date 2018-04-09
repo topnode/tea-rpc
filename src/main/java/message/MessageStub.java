@@ -34,6 +34,11 @@ public class MessageStub {
 	public static String hhost;
 	public static int pport;
 	
+	//
+	public static long getCustomer(){
+		return heartbeat.getConsumer();
+	};
+	
 	//重新链接
 	public static boolean reconnect(){
 		try {
@@ -82,7 +87,9 @@ public class MessageStub {
 //				System.out.println("furtures:" + furtures.size());
 				
 				for(Channel channel:channels){
+					heartbeat.setRequestId();
 					channel.writeAndFlush(heartbeat);
+					System.out.println("keep clean:" + now);
 				}
 				
 				
@@ -109,7 +116,7 @@ public class MessageStub {
 
 			}
 
-		}, 1, 2, TimeUnit.SECONDS);
+		}, 10, 30, TimeUnit.SECONDS);
 
 	}
 

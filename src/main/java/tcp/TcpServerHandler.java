@@ -14,7 +14,14 @@ public class TcpServerHandler  extends SimpleChannelInboundHandler<Message> {
 		// TODO Auto-generated method stub
 		try{
 			
-			MessageHook.getBusyQueue().submit(ctx.channel(), request);
+			if(request.getServiceId()==501718102){
+				
+				MessageHook.logChannel(request.getConsumer(),ctx.channel());
+				Message reply=MessageHook.invoker(request);
+				ctx.writeAndFlush(reply);
+			}else{
+			    MessageHook.getBusyQueue().submit(ctx.channel(), request);
+			}
 //			//request=MessageHook.filterFirst(request);		
 //			System.out.println(request);
 //			Message reply=MessageHook.invoker(request);
@@ -28,6 +35,11 @@ public class TcpServerHandler  extends SimpleChannelInboundHandler<Message> {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		   System.out.println("远端请求连接.");
 	}
 	
 	@Override
