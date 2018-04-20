@@ -30,7 +30,8 @@ public class TcpClientHandler extends SimpleChannelInboundHandler<Message> {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//e.printStackTrace();
+				 System.out.println("尝试重新连接RPC服务...");
 			}
 		   }
 	}
